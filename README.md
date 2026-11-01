@@ -38,6 +38,9 @@ npm run package   # → dist/study-arcade-extension.zip
 This copies `app/` and removes the local `"key"` from the manifest, since the store assigns its own extension ID.
 Bump `version` in `app/manifest.json` for each new upload.
 
+Store listing images are in `assets/store/`: the 128×128 store icon, three 1280×800 screenshots, and the
+440×280 promo tile. The icon's source is `assets/icon.svg`.
+
 ## Option 2: Website
 
 ```sh
