@@ -1,0 +1,10 @@
+{
+  "name": "study-arcade",
+  "version": "1.0.0",
+  "description": "Study games that turn flashcards or term lists from any web page into an arcade game",
+  "private": true,
+  "scripts": {
+    "start": "node server.js",
+    "package": "node scripts/package-extension.js"
+  }
+}

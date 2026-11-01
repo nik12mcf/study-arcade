@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Study Arcade</title>
+  <link rel="icon" href="icons/icon32.png" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <canvas id="space"></canvas>
+
+  <!-- ───────────── Setup screen ───────────── -->
+  <section id="setup" class="screen">
+    <div class="panel">
+      <h1>STUDY ARCADE</h1>
+      <p class="tagline">Study games for your flashcards.</p>
+
+      <div id="load-area">
+        <p id="load-status" class="status"></p>
+
+        <div class="option">
+          <h4>Import from any web page</h4>
+          <ol class="ext-only">
+            <li>Open a page with flashcards or a term list: a flashcard set, a class glossary, vocab tables…</li>
+            <li>Click the <b>Study Arcade</b> icon in your browser's toolbar. The cards open here.</li>
+          </ol>
+          <ol class="web-only">
+            <li>Drag this button to your bookmarks bar:
+              <a id="bookmarklet" class="btn bookmarklet" href="#">🕹️ Study Arcade</a>
+            </li>
+            <li>Open a page with flashcards or a term list: a flashcard set, a class glossary, vocab tables…</li>
+            <li>Click <b>🕹️ Study Arcade</b> in your bookmarks bar. The cards open here.</li>
+          </ol>
+          <p class="hint">Picked up the wrong thing? Highlight just the terms you want on the page, then click again.</p>
+        </div>
+
+        <div class="option">
+          <h4>Or paste your terms</h4>
+          <p class="hint">One card per line: term, then a Tab, " - ", ":" or comma, then the definition. Most flashcard sites' "Export" text works.</p>
+          <textarea id="paste-input" rows="5" placeholder="mitochondria - powerhouse of the cell&#10;ribosome - makes proteins"></textarea>
+          <div class="row paste-actions">
+            <button id="paste-load" class="btn">Use these cards</button>
+            <label class="btn ghost file-btn">Open a file (.txt, .csv)
+              <input id="file-input" type="file" accept=".txt,.csv,.tsv,text/plain,text/csv" hidden />
+            </label>
+          </div>
+        </div>
+
+        <p class="small-links"><a href="#" id="load-sample">Try a sample set</a></p>
+      </div>
+
+      <div id="set-area" class="hidden">
+        <div class="set-header">
+          <div>
+            <div class="set-title" id="set-title"></div>
+            <div class="set-count" id="set-count"></div>
+          </div>
+          <button id="change-set" class="btn ghost">Change set</button>
+        </div>
+        <div class="section-label">Cards to study</div>
+        <div class="group-controls">
+          <label>Groups of <input id="group-size" type="number" min="1" value="10" /> cards</label>
+          <span id="group-summary" class="muted"></span>
+          <span class="spacer"></span>
+          <button id="groups-all" class="btn ghost small" type="button">All</button>
+          <button id="groups-none" class="btn ghost small" type="button">None</button>
+        </div>
+        <div id="groups" class="groups"></div>
+        <p class="hint">Click groups to pick them (Shift-click picks a range). Bars show <span class="key-known">known</span> and <span class="key-learning">learning</span> cards.</p>
+        <div class="selected-row">
+          <span id="selected-count" class="muted"></span>
+          <button id="review-due" class="btn small hidden" type="button"></button>
+        </div>
+        <ul id="card-preview" class="card-preview"></ul>
+
+        <div class="section-label">Game</div>
+        <div class="mode-tabs">
+          <button class="mode-tab active" data-mode="flashcards" type="button">🃏 Flashcards</button>
+          <button class="mode-tab" data-mode="meteor" type="button">☄️ Meteor Shower</button>
+        </div>
+
+        <div id="opts-flashcards" class="settings">
+          <label>Show first
+            <select id="opt-fc-direction">
+              <option value="term">Term</option>
+              <option value="def">Definition</option>
+              <option value="both">Both ways (each card twice)</option>
+            </select>
+          </label>
+          <label>Order
+            <select id="opt-fc-order">
+              <option value="order">In order</option>
+              <option value="shuffle">Shuffled</option>
+            </select>
+          </label>
+          <label class="check wide"><input type="checkbox" id="opt-fc-typing" /> Type my answers (harder, better for memory)</label>
+        </div>
+
+        <div id="opts-meteor" class="settings hidden">
+          <label>Meteors show
+            <select id="opt-prompt">
+              <option value="term">Term → you type the definition</option>
+              <option value="def">Definition → you type the term</option>
+            </select>
+          </label>
+          <label>Starting level
+            <select id="opt-level">
+              <option value="1">1 (easy)</option>
+              <option value="3">3</option>
+              <option value="5">5</option>
+              <option value="8">8 (hard)</option>
+            </select>
+          </label>
+        </div>
+        <div class="section-label">Answer checking</div>
+        <div class="settings answer-opts">
+          <label class="check"><input type="checkbox" id="opt-accents" checked /> Ignore accents &amp; capitalization</label>
+          <label class="check"><input type="checkbox" id="opt-typos" checked /> Forgive small typos</label>
+          <label class="check wide"><input type="checkbox" id="opt-smart" checked /> Smart matching: accept the same meaning in different words (free, offline)</label>
+        </div>
+
+        <div class="row actions">
+          <button id="start" class="btn primary big">Study</button>
+          <button id="share" class="btn">Copy game link</button>
+        </div>
+        <p id="share-status" class="status"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───────────── Game HUD ───────────── -->
+  <section id="game" class="screen hidden">
+    <div class="hud">
+      <div>Score <b id="hud-score">0</b></div>
+      <div>Level <b id="hud-level">1</b></div>
+      <div id="hud-lives"></div>
+      <div class="hud-buttons">
+        <button id="restart" class="btn ghost small" title="Start over">↻ Restart</button>
+        <button id="giveup" class="btn ghost small" title="End the game and see your results">⚑ Give up</button>
+        <button id="pause" class="btn ghost small" title="Pause (Esc)">❚❚</button>
+      </div>
+    </div>
+    <div id="banner" class="banner hidden"></div>
+    <form id="answer-form" class="answer-bar">
+      <input id="answer" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Type the answer and press Enter" />
+    </form>
+  </section>
+
+  <!-- ───────────── Correction overlay ───────────── -->
+  <section id="correct" class="screen overlay hidden">
+    <div class="panel narrow">
+      <div class="overlay-kicker" id="correct-kicker">Impact!</div>
+      <div class="prompt-label">Prompt</div>
+      <div class="prompt-text" id="correct-prompt"></div>
+      <div id="correct-yours-wrap" class="hidden">
+        <div class="prompt-label">You typed</div>
+        <div class="yours-text" id="correct-yours"></div>
+      </div>
+      <div class="prompt-label">Correct answer</div>
+      <div class="answer-text" id="correct-answer"></div>
+      <form id="copy-form">
+        <label class="field-label" for="copy-input">Type the correct answer to continue, or press <kbd>Enter</kbd> to skip</label>
+        <input id="copy-input" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+      </form>
+      <button id="override" class="btn ghost small hidden">I was right, count it</button>
+    </div>
+  </section>
+
+  <!-- ───────────── Pause overlay ───────────── -->
+  <section id="paused" class="screen overlay hidden">
+    <div class="panel narrow center">
+      <h2>Paused</h2>
+      <div class="row actions">
+        <button id="resume" class="btn primary">Resume</button>
+        <button id="p-restart" class="btn">Restart</button>
+        <button id="p-giveup" class="btn">Give up</button>
+        <button id="quit" class="btn ghost">Menu</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───────────── Game over ───────────── -->
+  <section id="over" class="screen overlay hidden">
+    <div class="panel narrow">
+      <h2 class="center" id="over-title">Game over</h2>
+      <div class="stats">
+        <div><span id="over-score">0</span>Score</div>
+        <div><span id="over-level">1</span>Level</div>
+        <div><span id="over-acc">0%</span>Accuracy</div>
+      </div>
+      <div id="over-missed-wrap">
+        <h4>Cards to review</h4>
+        <ul id="over-missed" class="card-preview"></ul>
+      </div>
+      <div class="row actions">
+        <button id="again" class="btn primary">Play again</button>
+        <button id="over-study" class="btn">Study missed as flashcards</button>
+        <button id="menu" class="btn ghost">Menu</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───────────── Flashcards ───────────── -->
+  <section id="study" class="screen hidden">
+    <div class="study-wrap">
+      <div class="study-top">
+        <button id="fc-exit" class="btn ghost small" title="End session (Esc)">✕ End</button>
+        <div class="fc-progress"><div id="fc-progress-bar"></div></div>
+        <span id="fc-progress-text" class="muted"></span>
+        <span id="fc-left" class="muted"></span>
+      </div>
+
+      <div id="fc-card" class="fc-card">
+        <div class="fc-face fc-front-face">
+          <div class="fc-label" id="fc-front-label">Term</div>
+          <div class="fc-text" id="fc-front"></div>
+        </div>
+        <div class="fc-face fc-back-face">
+          <div class="fc-label" id="fc-back-label">Definition</div>
+          <div class="fc-text" id="fc-back"></div>
+          <div id="fc-verdict" class="fc-verdict"></div>
+        </div>
+      </div>
+
+      <div class="fc-controls">
+        <button id="fc-show" class="btn primary big">Show answer <kbd>Space</kbd></button>
+        <p id="fc-keys-front" class="muted fc-keys">Already know it? <kbd>Enter</kbd> marks it "Knew it" and moves on.</p>
+        <form id="fc-type" class="fc-type hidden">
+          <input id="fc-input" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Type the answer and press Enter" />
+          <button id="fc-skip-typing" class="btn ghost small" type="button">I don't know</button>
+        </form>
+        <div id="fc-rate" class="fc-rate hidden">
+          <p class="muted">How well did you know it?</p>
+          <div class="row">
+            <button id="rate-again" class="btn rate again">Didn't know <kbd>1</kbd></button>
+            <button id="rate-hard" class="btn rate hard">Unsure <kbd>2</kbd></button>
+            <button id="rate-good" class="btn rate good">Knew it <kbd>3</kbd></button>
+          </div>
+          <p class="muted fc-keys"><kbd>Space</kbd> flips the card · <kbd>Enter</kbd> picks the highlighted choice</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───────────── Flashcards summary ───────────── -->
+  <section id="study-done" class="screen overlay hidden">
+    <div class="panel narrow">
+      <h2 class="center">Session complete</h2>
+      <div class="stats">
+        <div><span id="done-first">0</span>Knew first try</div>
+        <div><span id="done-practice">0</span>Needed practice</div>
+        <div><span id="done-total">0</span>Cards</div>
+      </div>
+      <div id="done-practice-wrap">
+        <h4>Cards to keep practicing</h4>
+        <ul id="done-practice-list" class="card-preview"></ul>
+      </div>
+      <p class="hint center">Your progress is saved. Cards come back for review right before you'd forget them.</p>
+      <div class="done-actions">
+        <button id="done-next" class="btn primary hidden"></button>
+        <button id="done-again-missed" class="btn">Practice the tricky ones</button>
+        <button id="done-again" class="btn">Study these again</button>
+        <button id="done-meteor" class="btn">Play them in Meteor Shower</button>
+        <button id="done-menu" class="btn ghost">Menu</button>
+      </div>
+    </div>
+  </section>
+
+  <script src="extract.js"></script>
+  <script src="cards.js"></script>
+  <script src="ui.js"></script>
+  <script src="progress.js"></script>
+  <script src="meteor.js"></script>
+  <script src="flashcards.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
