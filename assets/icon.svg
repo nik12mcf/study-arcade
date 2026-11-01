@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#5b7bff"/>
+      <stop offset="1" stop-color="#9b5bff"/>
+    </linearGradient>
+    <linearGradient id="trail" x1="1" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff1d6" stop-opacity="0"/>
+      <stop offset="1" stop-color="#ffb27f"/>
+    </linearGradient>
+  </defs>
+  <rect x="4" y="4" width="120" height="120" rx="28" fill="url(#bg)"/>
+  <!-- flashcard -->
+  <g transform="translate(2 -4) rotate(-10 58 72)">
+    <rect x="22" y="44" width="72" height="54" rx="9" fill="#05060f" opacity="0.25" transform="translate(3 4)"/>
+    <rect x="22" y="44" width="72" height="54" rx="9" fill="#ffffff"/>
+    <rect x="32" y="60" width="40" height="7" rx="3.5" fill="#5b7bff"/>
+    <rect x="32" y="74" width="52" height="5" rx="2.5" fill="#c4cdf5"/>
+    <rect x="32" y="84" width="34" height="5" rx="2.5" fill="#c4cdf5"/>
+  </g>
+  <!-- meteor -->
+  <path d="M122 4 L99 43 L81 28 Z" fill="url(#trail)"/>
+  <circle cx="88" cy="38" r="14" fill="#ffcf8a"/>
+  <circle cx="84" cy="41" r="3.2" fill="#ffb27f"/>
+  <circle cx="92" cy="34" r="2.2" fill="#ffb27f"/>
+</svg>

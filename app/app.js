@@ -9,11 +9,10 @@
 
   const SET_KEY = 'studyArcade:lastSet';
   const PREFS_KEY = 'studyArcade:prefs';
-  const groupsKey = () => 'studyArcade:groups:' + setId;
+  const DEFAULT_GROUP_COUNT = 5; // every time the game opens; a number picked in the menu lasts until the tab closes
 
   let set = null; // { title, cards: [[term, def], ...] }
-  let setId = '';
-  let groupSize = 10;
+  let numGroups = DEFAULT_GROUP_COUNT;
   let selected = new Set([0]); // selected group numbers (0-based)
   let mode = 'flashcards';
 
@@ -47,7 +46,7 @@
   }
 
   function savePrefs() {
-    const prefs = { mode, groupSize };
+    const prefs = { mode };
     for (const id of OPTION_IDS) prefs[id] = $(id).type === 'checkbox' ? $(id).checked : $(id).value;
     store(PREFS_KEY, prefs);
   }
@@ -60,7 +59,6 @@
       else $(id).value = prefs[id];
     }
     if (prefs.mode) setMode(prefs.mode);
-    if (prefs.groupSize) groupSize = prefs.groupSize;
   }
 
   OPTION_IDS.forEach((id) => $(id).addEventListener('change', savePrefs));
@@ -80,8 +78,10 @@
   );
 
   // ───────────────────────── Groups ─────────────────────────
-  const groupCount = () => Math.ceil(set.cards.length / groupSize);
-  const groupRange = (g) => [g * groupSize, Math.min(set.cards.length, (g + 1) * groupSize)];
+  // Cards are spread as evenly as possible: group sizes differ by at most one card.
+  const groupCount = () => numGroups;
+  const groupRange = (g) => [Math.floor((g * set.cards.length) / numGroups), Math.floor(((g + 1) * set.cards.length) / numGroups)];
+  const groupOf = (i) => Math.floor(((i + 1) * numGroups - 1) / set.cards.length);
   const groupLabel = (g) => {
     const [a, b] = groupRange(g);
     return b - a === 1 ? `${a + 1}` : `${a + 1}–${b}`;
@@ -101,9 +101,11 @@
     const box = $('groups');
     box.innerHTML = '';
     const n = groupCount();
-    if (document.activeElement !== $('group-size')) $('group-size').value = groupSize;
-    $('group-size').max = set.cards.length;
-    $('group-summary').textContent = n === 1 ? '1 group' : `${n} groups`;
+    if (document.activeElement !== $('group-count')) $('group-count').value = numGroups;
+    $('group-count').max = set.cards.length;
+    const small = Math.floor(set.cards.length / n);
+    const big = Math.ceil(set.cards.length / n);
+    $('group-summary').textContent = `${small === big ? small : small + '–' + big} card${big === 1 ? '' : 's'} each`;
     for (let g = 0; g < n; g++) {
       const [a, b] = groupRange(g);
       const counts = [0, 0, 0];
@@ -141,7 +143,6 @@
 
   function selectionChanged(rerender = true) {
     if (rerender) return renderGroups();
-    store(groupsKey(), { size: groupSize, groups: [...selected] });
     const cards = selectedCards();
     $('selected-count').textContent = cards.length
       ? `${cards.length} of ${set.cards.length} cards selected`
@@ -153,19 +154,18 @@
     $('review-due').textContent = `Review ${due} due card${due === 1 ? '' : 's'}`;
   }
 
-  // Applied while typing (not on blur), so clicking a group right after typing a size works.
-  $('group-size').addEventListener('input', () => {
-    const n = Math.round(Number($('group-size').value));
+  // Applied while typing (not on blur), so clicking a group right after typing a number works.
+  $('group-count').addEventListener('input', () => {
+    const n = Math.round(Number($('group-count').value));
     if (!n || n < 1) return;
-    const size = Math.min(set.cards.length, n);
-    if (size === groupSize) return;
-    groupSize = size;
+    const count = Math.min(set.cards.length, n);
+    if (count === numGroups) return;
+    numGroups = count;
     selected = new Set([0]);
     lastClicked = 0;
-    savePrefs();
     renderGroups();
   });
-  $('group-size').addEventListener('change', () => ($('group-size').value = groupSize));
+  $('group-count').addEventListener('change', () => ($('group-count').value = numGroups));
   $('groups-all').addEventListener('click', () => {
     selected = new Set([...Array(groupCount()).keys()]);
     renderGroups();
@@ -196,7 +196,7 @@
 
   // After finishing a group, offer the one right after the last group studied.
   function nextGroupAfter(cards) {
-    const last = Math.floor(cards[cards.length - 1] / groupSize);
+    const last = groupOf(cards[cards.length - 1]);
     const g = last + 1;
     if (g >= groupCount() || cards.length !== selectedCards().length) return null;
     return {
@@ -219,16 +219,9 @@
   function useSet(newSet, { remember = true } = {}) {
     if (!newSet.cards.length) return false;
     set = newSet;
-    setId = Progress.hash(JSON.stringify(set.cards));
     if (remember) store(SET_KEY, set);
-    const saved = load(groupsKey(), null);
-    if (saved && saved.size) {
-      groupSize = saved.size;
-      selected = new Set(saved.groups.filter((g) => g < groupCount()));
-    } else {
-      groupSize = Math.min(groupSize, set.cards.length) || 10;
-      selected = new Set([0]);
-    }
+    numGroups = Math.min(DEFAULT_GROUP_COUNT, set.cards.length);
+    selected = new Set([0]);
     $('set-title').textContent = set.title;
     $('set-count').textContent = `${set.cards.length} cards`;
     $('load-area').classList.add('hidden');
@@ -263,11 +256,13 @@
     e.target.value = '';
   });
 
-  $('change-set').addEventListener('click', () => {
+  function showLoadArea() {
     $('set-area').classList.add('hidden');
     $('load-area').classList.remove('hidden');
     history.replaceState(null, '', location.pathname + location.search);
-  });
+  }
+
+  $('change-set').addEventListener('click', showLoadArea);
 
   $('share').addEventListener('click', async () => {
     const url = location.origin + location.pathname + '#set=' + (await Cards.encodeSet(set));
@@ -291,19 +286,25 @@
     alert('Drag this button to your bookmarks bar, then click it on any page with flashcards or a term list.');
   });
 
+  // Returns false when there's nothing in the address bar, so the last set can be reopened.
   async function loadFromHash() {
     if (location.hash === '#notice=no-cards') {
+      // Show the import options with the message, not the previous set (which would hide it).
+      showLoadArea();
       status($('load-status'), "Couldn't find flashcards on that page. Highlight the terms you want there and click the icon again, or paste them below.", 'error');
-      history.replaceState(null, '', location.pathname + location.search);
-      return false;
+      return true;
     }
     const m = location.hash.match(/^#set=(.+)$/);
     if (!m) return false;
     try {
-      return useSet(await Cards.decodeSet(m[1]));
+      const ok = useSet(await Cards.decodeSet(m[1]));
+      // Drop the cards from the address bar; reloading the tab reopens the set from storage.
+      if (ok) history.replaceState(null, '', location.pathname + location.search);
+      return ok;
     } catch (err) {
+      showLoadArea();
       status($('load-status'), 'That game link looks broken or incomplete.', 'error');
-      return false;
+      return true;
     }
   }
 
@@ -314,6 +315,8 @@
 
   // AI grading was removed; delete any API key it saved in this browser.
   localStorage.removeItem('studyArcade:ai');
+  // Group sizes used to be saved per set; they're no longer used.
+  Object.keys(localStorage).filter((k) => k.startsWith('studyArcade:groups:')).forEach((k) => localStorage.removeItem(k));
 
   restorePrefs();
   (async () => {

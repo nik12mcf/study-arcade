@@ -12,6 +12,7 @@ Study games for your flashcards. Import cards from any web page, a file, or past
   - flashcard data embedded in the page (term/definition, front/back, question/answer, schema.org quizzes)
   - definition lists and two-column tables
   - repeated two-part rows, like most card lists
+  - bullet lists written as `term: definition` or `term – definition`
 - **Pick exactly what you want.** Highlight the terms on the page (one per line, like `term - definition`, or
   term and definition on alternating lines) and click the icon. A selection always wins.
 - **Paste or open a file.** One card per line, separated by a Tab, ` - `, `:`, `=`, or a comma (CSV is fine).
@@ -49,7 +50,7 @@ so add it again if you host `app/` somewhere else (such as GitHub Pages).
 
 ## Studying in groups
 
-Pick a group size (10 by default) and the set is split in order: 1–10, 11–20, and so on. Click the groups you
+The set is split in order into 5 groups by default, as evenly as possible (100 cards → 1–20, 21–40, …). You can pick any number of groups. Click the groups you
 want (Shift-click picks a range). Both games use only the selected cards. Each group shows a bar of how many of
 its cards you know (green) and are still learning (yellow). After finishing a group in Flashcards, you can go
 straight to the next one.

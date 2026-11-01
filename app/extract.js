@@ -7,7 +7,8 @@
 //   2. Quizlet set pages.
 //   3. Structured data embedded in the page (JSON with term/definition, front/back,
 //      question/answer… and schema.org Quiz markup used by many flashcard sites).
-//   4. Definition lists, two-column tables, and repeated two-part rows in the HTML.
+//   4. Definition lists, two-column tables, repeated two-part rows, and bullet lists of
+//      "term: definition" lines in the HTML.
 //
 // Resolves to { title, cards: [[term, def], ...], source } or { error: 'no-cards' }.
 async function extractStudyCards() {
@@ -189,6 +190,31 @@ async function extractStudyCards() {
     }
     if (pairs.length >= rows.length * 0.7) add('rows', 1, pairs, 4);
   });
+
+  // 4d. Bullet lists written as "term: definition" or "term – definition" (glossaries, notes).
+  //     Only each item's own text counts; nested lists are read as items of their own.
+  //     The split is the first ":" or dash outside brackets, so "x (plural: y) – z" splits at the dash.
+  const splitTerm = (text) => {
+    let depth = 0;
+    for (let i = 0; i < Math.min(text.length, 100); i++) {
+      const ch = text[i];
+      if (ch === '(' || ch === '[') depth++;
+      else if (ch === ')' || ch === ']') depth = Math.max(0, depth - 1);
+      else if (depth) continue;
+      else if (ch === ':' && text[i + 1] === ' ') return [text.slice(0, i), text.slice(i + 2)];
+      else if (/[–—-]/.test(ch) && text[i - 1] === ' ' && text[i + 1] === ' ') return [text.slice(0, i - 1), text.slice(i + 2)];
+    }
+    return null;
+  };
+  const bulletPairs = [];
+  document.querySelectorAll('li').forEach((li) => {
+    if (li.closest('nav, header, footer, [role="navigation"], .navbox, .toc, .vector-toc, .references, .reflist, .refbegin')) return;
+    const own = li.cloneNode(true);
+    own.querySelectorAll('ul, ol, sup, style, script').forEach((n) => n.remove());
+    const pair = splitTerm(clean(own.textContent));
+    if (pair && pair[0].length <= 100 && pair[0].split(' ').length <= 12) bulletPairs.push(pair);
+  });
+  add('bullets', 0.9, bulletPairs, 5);
 
   if (!candidates.length) return { error: 'no-cards' };
   const best = candidates.sort((a, b) => b.score - a.score)[0];
