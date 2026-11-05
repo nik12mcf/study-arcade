@@ -18,7 +18,8 @@ Study games for your flashcards. Import cards from any web page, a file, or past
 - **Paste or open a file.** One card per line, separated by a Tab, ` - `, `:`, `=`, or a comma (CSV is fine).
   The "Export" text from most flashcard sites works as is.
 
-Once a set is loaded, **Copy game link** gives you a URL with the cards packed into it.
+Once a set is loaded, **Copy game link** gives you a URL with the cards packed into it. A link copied from the
+extension opens only for people who have Study Arcade installed; a link from the website opens for anyone.
 
 ## Option 1: Browser extension (Chrome, Brave, Edge)
 
@@ -26,8 +27,12 @@ Once a set is loaded, **Copy game link** gives you a URL with the cards packed i
 2. Click **Load unpacked** and choose this project's **`app`** folder.
 3. Pin **Study Arcade** to the toolbar.
 
-The extension only uses `activeTab`: it can read a page only at the moment you click its icon there, and it has no
-access to any site otherwise. Clicking the icon on a page without cards just opens the game.
+The import screen shows a short demo of this (`app/media/demo.webm`, a screen recording compressed to 1280 px VP9).
+
+The extension asks for only two permissions, `activeTab` and `scripting`: it can read a page only at the moment
+you click its icon there, and it has no access to any site otherwise. Nothing is sent anywhere; cards and
+progress stay in your browser. Clicking the icon on a page without cards opens the game with the other ways to
+add cards.
 
 ### Publishing to the Chrome Web Store
 
@@ -36,10 +41,21 @@ npm run package   # → dist/study-arcade-extension.zip
 ```
 
 This copies `app/` and removes the local `"key"` from the manifest, since the store assigns its own extension ID.
-Bump `version` in `app/manifest.json` for each new upload.
 
-Store listing images are in `assets/store/`: the 128×128 store icon, three 1280×800 screenshots, and the
-440×280 promo tile. The icon's source is `assets/icon.svg`.
+Listing material is in `assets/store/`: the store description (`description.txt`), the 128×128 store icon, three
+1280×800 screenshots, and the 440×280 promo tile. The icon's source is `assets/icon.svg`, with a simplified
+`assets/icon-small.svg` for the 16 and 32 px toolbar icons (the store icon has a 16 px transparent margin).
+
+### Releasing an update
+
+1. Change the code and test it: click **reload** on Study Arcade in `chrome://extensions`.
+2. Raise `version` in `app/manifest.json` (`1.0.1` for fixes, `1.1.0` for features). The store rejects an upload
+   whose version isn't higher than the last one.
+3. `npm run package`, then commit and tag the release (`git tag v1.0.1 && git push --tags`).
+4. In the developer dashboard: **Package → Upload new package**, update the listing if needed, and **Submit for
+   review**. Users keep the current version until the update is approved, then get it automatically.
+
+Avoid adding permissions in an update: Chrome disables the extension for existing users until they accept them.
 
 ## Option 2: Website
 
@@ -53,10 +69,11 @@ so add it again if you host `app/` somewhere else (such as GitHub Pages).
 
 ## Studying in groups
 
-The set is split in order into 5 groups by default, as evenly as possible (100 cards → 1–20, 21–40, …). You can pick any number of groups. Click the groups you
-want (Shift-click picks a range). Both games use only the selected cards. Each group shows a bar of how many of
-its cards you know (green) and are still learning (yellow). After finishing a group in Flashcards, you can go
-straight to the next one.
+Each set is split in order into 5 groups, as evenly as possible (100 cards → 1–20, 21–40, …; 308 cards → groups
+of 61 or 62). Change the number to split it into more or fewer groups; it goes back to 5 whenever the game opens.
+Click the groups you want (Shift-click picks a range). Both games use only the selected cards. Each group shows a
+bar of how many of its cards you know (green) and are still learning (yellow). After finishing a group in
+Flashcards, you can go straight to the next one.
 
 ## How Flashcards works
 

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Study Arcade",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Turn flashcards or term lists on any web page into study games. Select terms or open a flashcard set, then click the icon.",
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAy+FO5BvxNqB1oIYE626tW5CNlarsVZeohNpjHiHrnSwfJo61S+U3pLBL9IXKVeaw6I1hTdEmiVAnXbTg7+gxXsoprSWuqup7u0EflYHlH8wF3PLrFtOji5Xm/modw0JCOyknM1K5QpTg/idSHz8cS74i/jFMDcqo7j+j+xkGluU86IEWH/KvjPTa73D90hvCOrbPyETAglVuTvV6IRzTYSTVzybjiJQwrdtu1WiTdQFcqSNgLlBcnLAxEpeluWMrZEAK4bQDxa50TYoVWgIJ+/EwYBJKHgMhUwQ3Y1fqLQJZ75K6VdHoVxVT6yT4NZN1KYXvMtkcllMWBv+jkJUPuQIDAQAB",
   "icons": {

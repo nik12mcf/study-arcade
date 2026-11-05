@@ -1,0 +1,39 @@
+Turn any flashcard set or vocabulary list into a game, without retyping anything.
+
+Open a page with flashcards, a glossary or a term list, click the Study Arcade icon, and your cards are ready to play.
+
+TWO WAYS TO STUDY
+
+☄️ Meteor Shower
+Meteors carrying terms fall toward your planet. Type the answer before they hit. Each level brings more and faster meteors, and quicker answers score more points. When the game ends, you see the cards you missed and can study them as flashcards in one click.
+
+🃏 Flashcards
+Recall the answer, flip the card, and rate yourself: Didn't know, Unsure or Knew it. Cards you miss come back a few cards later, and the session ends when you know them all. Spaced repetition then schedules each card's next review (1 day, 3 days, about a week, and longer each time you get it right), so you review cards just before you'd forget them.
+
+BRING YOUR CARDS FROM ANYWHERE
+• Flashcard sets and study sites: click the icon and the cards are found automatically
+• Glossaries, vocabulary tables, term lists, and notes written as "term: definition"
+• Pick exactly what you want: highlight some terms on the page, then click the icon
+• Paste a list, or open a text or CSV file. The "Export" text from most flashcard sites works as is
+
+SMART ANSWER CHECKING
+Typed answers are checked fairly, not just letter by letter:
+• Optionally ignore capitals and accents, and forgive small typos
+• Any one alternative counts ("big / large" accepts either word)
+• "21" and "twenty-one" are the same, but numbers are never typo-forgiven
+• Smart matching ignores word order and filler words, so "cell division" matches "the division of a cell"
+• Adding or dropping "not" never sneaks through as correct
+
+BUILT FOR REAL STUDYING
+• Long sets are split into 5 even groups, so you can learn a few cards at a time (or pick your own number of groups)
+• Progress bars show how many cards in each group you know and how many you're still learning
+• Finish a group and go straight on to the next one
+• Study term first, definition first, or both ways
+• Type your answers for stronger recall
+• Keyboard shortcuts throughout
+• Share a set with classmates who use Study Arcade using a game link
+
+PRIVATE BY DESIGN
+Study Arcade reads a page only at the moment you click its icon, and it has no access to any site otherwise. There are no accounts and no tracking, and nothing is sent anywhere: your cards and progress stay in your browser.
+
+Free and works offline once your cards are loaded.

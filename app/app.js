@@ -313,6 +313,26 @@
     loadFromHash();
   });
 
+  // Demo video on the import screen: plays only while visible, and not by default with reduced motion.
+  const demo = $('demo-video');
+  let demoPaused = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let demoVisible = false;
+  function syncDemo() {
+    if (demoVisible && !demoPaused) demo.play().catch(() => {});
+    else demo.pause();
+    $('demo-toggle').textContent = demoPaused ? '▶ Play' : '❚❚ Pause';
+  }
+  const toggleDemo = () => {
+    demoPaused = !demoPaused;
+    syncDemo();
+  };
+  new IntersectionObserver(([entry]) => {
+    demoVisible = entry.isIntersecting;
+    syncDemo();
+  }).observe(demo);
+  demo.addEventListener('click', toggleDemo);
+  $('demo-toggle').addEventListener('click', toggleDemo);
+
   // AI grading was removed; delete any API key it saved in this browser.
   localStorage.removeItem('studyArcade:ai');
   // Group sizes used to be saved per set; they're no longer used.
